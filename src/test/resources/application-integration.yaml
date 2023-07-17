@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5454/users
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+  flyway:
+    enabled: false
