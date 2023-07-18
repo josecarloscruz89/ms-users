@@ -4,6 +4,7 @@ import com.josecarloscruz89.msusers.model.dto.UserResponse;
 import com.josecarloscruz89.msusers.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,4 +27,9 @@ public class UserController {
         return userService.getAllUsers();
     }
 
+    @GetMapping("/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponse getUserById(@PathVariable(name = "userId") String userId) {
+        return userService.getUserById(userId);
+    }
 }
