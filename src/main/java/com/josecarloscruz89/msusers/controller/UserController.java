@@ -1,13 +1,11 @@
 package com.josecarloscruz89.msusers.controller;
 
+import com.josecarloscruz89.msusers.model.dto.UserRequest;
 import com.josecarloscruz89.msusers.model.dto.UserResponse;
 import com.josecarloscruz89.msusers.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,5 +29,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public UserResponse getUserById(@PathVariable(name = "userId") String userId) {
         return userService.getUserById(userId);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createUser(@RequestBody UserRequest userRequest, HttpServletResponse httpServletResponse) {
+        String createdUserId = userService.createUser(userRequest);
+        httpServletResponse.setHeader("Location", createdUserId);
     }
 }

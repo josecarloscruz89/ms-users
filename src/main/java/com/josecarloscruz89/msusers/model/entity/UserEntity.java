@@ -49,10 +49,4 @@ public class UserEntity {
                 .age(userRequest.getAge())
                 .build();
     }
-
-    public void updateValues(UserRequest userRequest) {
-        this.name = userRequest.getName();
-        this.age = userRequest.getAge();
-        this.updatedAt = LocalDateTime.now();
-    }
 }
