@@ -1,5 +1,6 @@
 package com.josecarloscruz89.msusers.controller;
 
+import com.josecarloscruz89.msusers.exception.NotFoundException;
 import com.josecarloscruz89.msusers.model.dto.UserResponse;
 import com.josecarloscruz89.msusers.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,46 @@ public class UserControllerTest {
     private ObjectMapper objectMapper;
 
     private static final String USERS_ENDPOINT = "/users";
+    private static final String USER_BY_ID_ENDPOINT = "/users/{userId}";
+
+    @Test
+    @DisplayName("Should return 404 NotFound when the id does not exist")
+    public void shouldReturnNotFoundExceptionWhenIdDoesNotExist() throws Exception {
+        String invalidId = "abc123";
+
+        when(userService.getUserById(invalidId))
+                .thenThrow(new NotFoundException());
+
+        mockMvc.perform(get(USER_BY_ID_ENDPOINT, invalidId))
+                .andExpect(status().isNotFound());
+
+        verify(userService, times(1)).getUserById(invalidId);
+        verifyNoMoreInteractions(userService);
+    }
+
+    @Test
+    @DisplayName("Should return an user by id")
+    public void shouldReturnAnUserById() throws Exception {
+        String uuid = UUID.randomUUID().toString();
+
+        UserResponse userResponse = UserResponse.builder()
+                .name("Jose")
+                .age(33)
+                .uuid(uuid)
+                .build();
+
+        when(userService.getUserById(uuid))
+                .thenReturn(userResponse);
+
+        mockMvc.perform(get(USER_BY_ID_ENDPOINT, uuid))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.uuid", is(uuid)))
+                .andExpect(jsonPath("$.name", is("Jose")))
+                .andExpect(jsonPath("$.age", is(33)));
+
+        verify(userService, times(1)).getUserById(uuid);
+        verifyNoMoreInteractions(userService);
+    }
 
     @Test
     @DisplayName("Should return a list with all users")
@@ -70,4 +111,5 @@ public class UserControllerTest {
         verify(userService, times(1)).getAllUsers();
         verifyNoMoreInteractions(userService);
     }
+
 }
