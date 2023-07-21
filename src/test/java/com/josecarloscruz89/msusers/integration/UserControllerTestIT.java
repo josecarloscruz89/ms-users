@@ -3,10 +3,12 @@ package com.josecarloscruz89.msusers.integration;
 import com.josecarloscruz89.msusers.integration.core.IntegrationTest;
 import com.josecarloscruz89.msusers.model.entity.UserEntity;
 import com.josecarloscruz89.msusers.repository.UserRepository;
+import com.josecarloscruz89.msusers.utils.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,6 +21,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.jdbc.JdbcTestUtils.deleteFromTables;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -84,5 +88,25 @@ public class UserControllerTestIT {
 
         mockMvc.perform(get(USERS_BY_ID_ENDPOINT, uuid))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should create a new user")
+    void shouldCreateANewUser() throws Exception {
+        String requestBody = FileUtils.getJSONFromFile("createUser.json");
+
+        mockMvc.perform(post(USERS_ENDPOINT)
+                        .content(requestBody)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", hasLength(UUID_LENGTH)));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when request body does not exist")
+    void shouldReturn400WhenRequestBodyDoesNotExist() throws Exception {
+        mockMvc.perform(post(USERS_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }
