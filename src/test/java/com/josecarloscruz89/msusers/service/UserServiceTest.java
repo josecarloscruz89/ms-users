@@ -1,6 +1,7 @@
 package com.josecarloscruz89.msusers.service;
 
 import com.josecarloscruz89.msusers.exception.NotFoundException;
+import com.josecarloscruz89.msusers.model.dto.UserRequest;
 import com.josecarloscruz89.msusers.model.dto.UserResponse;
 import com.josecarloscruz89.msusers.model.entity.UserEntity;
 import com.josecarloscruz89.msusers.repository.UserRepository;
@@ -20,9 +21,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -60,6 +63,26 @@ public class UserServiceTest {
 
         entities.add(userOne);
         entities.add(userTwo);
+    }
+
+    @Test
+    @DisplayName("Should create a new user")
+    public void shouldCreateANewUser() {
+        UserRequest userRequest = UserRequest.builder()
+                .name("Jose")
+                .age(33)
+                .build();
+
+        UserEntity userEntity = entities.get(0);
+
+        given(userRepository.save(any(UserEntity.class)))
+                .willReturn(userEntity);
+
+        String userCreatedUuid = userService.createUser(userRequest);
+
+        assertThat(userCreatedUuid)
+                .isNotNull()
+                .isEqualTo(userEntity.getUuid());
     }
 
     @Test
