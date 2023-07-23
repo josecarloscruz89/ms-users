@@ -37,4 +37,10 @@ public class UserController {
         String createdUserId = userService.createUser(userRequest);
         httpServletResponse.setHeader("Location", createdUserId);
     }
+
+    @PutMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateUser(@RequestBody UserRequest userRequest, @PathVariable(name = "userId") String userId){
+        userService.updateUser(userRequest, userId);
+    }
 }

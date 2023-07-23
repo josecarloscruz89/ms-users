@@ -47,4 +47,14 @@ public class UserService {
 
         return savedEntity.getUuid();
     }
+
+    public void updateUser(UserRequest userRequest, String userId) {
+        log.info("Updating userId: {} with {}", userId, userRequest);
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(NotFoundException::new);
+
+        userEntity.updateValues(userRequest);
+
+        userRepository.save(userEntity);
+    }
 }
