@@ -14,22 +14,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("User Service Tests")
@@ -83,6 +76,48 @@ public class UserServiceTest {
         assertThat(userCreatedUuid)
                 .isNotNull()
                 .isEqualTo(userEntity.getUuid());
+    }
+
+    @Test
+    @DisplayName("Should throw a not found exception when trying to update an user")
+    public void shouldThrowANotFoundExceptionWhenUpdatingUserById() {
+        UserRequest userRequest = UserRequest.builder()
+                .name("Jose")
+                .age(33)
+                .build();
+
+        String invalidUserId = "123";
+
+        when(userRepository.findById(invalidUserId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> userService.updateUser(userRequest, invalidUserId));
+
+        verify(userRepository, times(0)).save(any(UserEntity.class));
+        verify(userRepository, times(1)).findById(invalidUserId);
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    @DisplayName("Should update an user by id")
+    public void shouldUpdateUserById() {
+        UserRequest userRequest = UserRequest.builder()
+                .name("Jose")
+                .age(33)
+                .build();
+
+        UserEntity userEntity = entities.get(0);
+        String userId = userEntity.getUuid();
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(userEntity));
+
+        assertThatCode(() -> userService.updateUser(userRequest, userId))
+                .doesNotThrowAnyException();
+
+        verify(userRepository, times(1)).save(any(UserEntity.class));
+        verify(userRepository, times(1)).findById(userId);
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test

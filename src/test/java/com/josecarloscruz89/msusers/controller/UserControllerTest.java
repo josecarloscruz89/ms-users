@@ -69,6 +69,27 @@ public class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Should update a user by id")
+    public void shouldUpdateAUserById() throws Exception {
+        UserRequest userRequest = UserRequest.builder()
+                .name("Jose")
+                .age(33)
+                .build();
+
+        String uuid = UUID.randomUUID().toString();
+
+        byte[] body = objectMapper.writeValueAsBytes(userRequest);
+
+        mockMvc.perform(put(USER_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isNoContent());
+
+        verify(userService, times(1)).updateUser(userRequest, uuid);
+        verifyNoMoreInteractions(userService);
+    }
+
+    @Test
     @DisplayName("Should return 404 NotFound when the id does not exist")
     public void shouldReturnNotFoundExceptionWhenIdDoesNotExist() throws Exception {
         String invalidId = "abc123";
