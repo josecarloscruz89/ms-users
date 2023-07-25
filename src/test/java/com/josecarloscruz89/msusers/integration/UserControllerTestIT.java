@@ -15,16 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
 
 import static com.josecarloscruz89.msusers.integration.factory.UserFactory.createUser;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasLength;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.jdbc.JdbcTestUtils.deleteFromTables;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @IntegrationTest
 public class UserControllerTestIT {
@@ -104,9 +99,115 @@ public class UserControllerTestIT {
 
     @Test
     @DisplayName("Should return 400 when request body does not exist")
-    void shouldReturn400WhenRequestBodyDoesNotExist() throws Exception {
+    void shouldReturn400WhenRequestBodyDoesNOtExist() throws Exception {
         mockMvc.perform(post(USERS_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should update an existing user and return no content")
+    void shouldUpdateAnExistingUserAndReturnNoContent() throws Exception {
+        UserEntity userPutTest = createUser("userPutTest", 30);
+        userRepository.save(userPutTest);
+        String uuid = userPutTest.getUuid();
+
+        String requestBody = FileUtils.getJSONFromFile("updateUser.json");
+
+        mockMvc.perform(put(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNoContent());
+
+        UserEntity updatedUser = userRepository.findById(uuid).get();
+        assertThat(updatedUser.getUuid(), is(uuid));
+        assertThat(updatedUser.getName(), is("Updated User Integration Test"));
+        assertThat(updatedUser.getAge(), is(70));
+    }
+
+    @Test
+    @DisplayName("Should return bad request when request body is empty")
+    void shouldReturnBadRequestWhenRequestBodyIsEmpty() throws Exception {
+        UserEntity userPutTest = createUser("userPutTest", 30);
+        userRepository.save(userPutTest);
+        String uuid = userPutTest.getUuid();
+
+        mockMvc.perform(put(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return not found when the userId is invalid")
+    void shouldReturnNotFoundWhenTheUserIdIsInvalid() throws Exception {
+        String uuid = "123456";
+
+        String requestBody = FileUtils.getJSONFromFile("updateUser.json");
+
+        mockMvc.perform(put(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should return bad request when age key is not present")
+    void shouldReturnBadRequestWhenAgeKeyIsNotPresent() throws Exception {
+        UserEntity userPutTest = createUser("userPutTest", 30);
+        userRepository.save(userPutTest);
+        String uuid = userPutTest.getUuid();
+
+        String requestBody = FileUtils.getJSONFromFile("updateUserWithoutAge.json");
+
+        mockMvc.perform(put(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return bad request when name key is not present")
+    void shouldReturnBadRequestWhenNameKeyIsNotPresent() throws Exception {
+        UserEntity userPutTest = createUser("userPutTest", 30);
+        userRepository.save(userPutTest);
+        String uuid = userPutTest.getUuid();
+
+        String requestBody = FileUtils.getJSONFromFile("updateUserWithoutName.json");
+
+        mockMvc.perform(put(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return bad request when name key is not a string")
+    void shouldReturnBadRequestWhenNameKeyIsNotAString() throws Exception {
+        UserEntity userPutTest = createUser("userPutTest", 30);
+        userRepository.save(userPutTest);
+        String uuid = userPutTest.getUuid();
+
+        String requestBody = FileUtils.getJSONFromFile("updateUserNameIsNotAString.json");
+
+        mockMvc.perform(put(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    @DisplayName("Should return bad request when the age is not an Integer")
+    void shouldReturnBadRequestWhenTheAgeIsNotAnInteger() throws Exception {
+        UserEntity userPutTest = createUser("userPutTest", 30);
+        userRepository.save(userPutTest);
+        String uuid = userPutTest.getUuid();
+
+        String requestBody = FileUtils.getJSONFromFile("updateUserAgeIsNotAnInteger.json");
+
+        mockMvc.perform(put(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
                 .andExpect(status().isBadRequest());
     }
 }
