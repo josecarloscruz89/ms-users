@@ -210,4 +210,44 @@ public class UserControllerTestIT {
                         .content(requestBody))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @DisplayName("Should partially update an existing user name")
+    void shouldPartiallyUpdateAnExistingUserName() throws Exception {
+        UserEntity userPatchNameTest = createUser("userPatchNameTest", 40);
+        userRepository.save(userPatchNameTest);
+        String uuid = userPatchNameTest.getUuid();
+
+        String requestBody = FileUtils.getJSONFromFile("partiallyUpdateUserName.json");
+
+        mockMvc.perform(patch(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNoContent());
+
+        UserEntity updatedUser = userRepository.findById(uuid).get();
+        assertThat(updatedUser.getUuid(), is(uuid));
+        assertThat(updatedUser.getName(), is("Partially Updated User"));
+        assertThat(updatedUser.getAge(), is(40));
+    }
+
+    @Test
+    @DisplayName("Should partially update an existing user age")
+    void shouldPartiallyUpdateAnExistingUserAge() throws Exception {
+        UserEntity userPatchAgeTest = createUser("userPatchAgeTest", 40);
+        userRepository.save(userPatchAgeTest);
+        String uuid = userPatchAgeTest.getUuid();
+
+        String requestBody = FileUtils.getJSONFromFile("partiallyUpdateUserAge.json");
+
+        mockMvc.perform(patch(USERS_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isNoContent());
+
+        UserEntity updatedUser = userRepository.findById(uuid).get();
+        assertThat(updatedUser.getUuid(), is(uuid));
+        assertThat(updatedUser.getName(), is("userPatchAgeTest"));
+        assertThat(updatedUser.getAge(), is(55));
+    }
 }
