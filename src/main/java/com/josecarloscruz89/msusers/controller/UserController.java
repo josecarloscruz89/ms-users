@@ -49,4 +49,10 @@ public class UserController {
     public void partialUpdateUser(@RequestBody UserRequest userRequest, @PathVariable(name = "userId") String userId) {
         userService.partialUpdateUser(userRequest, userId);
     }
+
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUserById(@PathVariable(name = "userId") String userId) {
+        userService.deleteUserById(userId);
+    }
 }
