@@ -59,6 +59,39 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Should not delete an user by id because it does not exist")
+    public void shouldNotDeleteAnUserByIdBecauseItDoesNotExist() {
+        String uuid = UUID.randomUUID().toString();
+
+        when(userRepository.findById(uuid))
+                .thenReturn(Optional.empty());
+
+        assertThatCode(() -> userService.deleteUserById(uuid))
+                .doesNotThrowAnyException();
+
+        verify(userRepository, times(1)).findById(uuid);
+        verify(userRepository, times(0)).delete(any(UserEntity.class));
+        verifyNoMoreInteractions(userRepository);
+    }
+    @Test
+    @DisplayName("Should delete an user by id")
+    public void shouldDeleteAnUserById() {
+        String uuid = UUID.randomUUID().toString();
+
+        UserEntity userEntity = entities.get(0);
+
+        when(userRepository.findById(uuid))
+                .thenReturn(Optional.of(userEntity));
+
+        assertThatCode(() -> userService.deleteUserById(uuid))
+                .doesNotThrowAnyException();
+
+        verify(userRepository, times(1)).findById(uuid);
+        verify(userRepository, times(1)).delete(any(UserEntity.class));
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
     @DisplayName("Should not partial update an user due to a Not Found Exception")
     public void shouldNotPartialUpdateAnUserDueToNotFoundException() {
         UserRequest userRequest = UserRequest.builder()

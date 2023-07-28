@@ -43,6 +43,18 @@ public class UserControllerTest {
     private static final String USER_BY_ID_ENDPOINT = "/users/{userId}";
 
     @Test
+    @DisplayName("Should delete an user by id")
+    public void shouldDeleteAnUserById() throws Exception {
+        String uuid = UUID.randomUUID().toString();
+
+        mockMvc.perform(delete(USER_BY_ID_ENDPOINT, uuid))
+                .andExpect(status().isNoContent());
+
+        verify(userService, times(1)).deleteUserById(uuid);
+        verifyNoMoreInteractions(userService);
+    }
+
+    @Test
     @DisplayName("Should partial update an user")
     public void shouldPartialUpdateAnUser() throws Exception {
         UserRequest userRequest = UserRequest.builder()
