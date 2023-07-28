@@ -250,4 +250,16 @@ public class UserControllerTestIT {
         assertThat(updatedUser.getName(), is("userPatchAgeTest"));
         assertThat(updatedUser.getAge(), is(55));
     }
+
+    @Test
+    @DisplayName("Should delete an existing user and return no content")
+    void shouldDeleteAnExistingUserAndReturnNoContent() throws Exception {
+        UserEntity userDeleteTest = createUser("userDeleteTest", 50);
+        userRepository.save(userDeleteTest);
+        String uuid = userDeleteTest.getUuid();
+
+        mockMvc.perform(delete(USERS_BY_ID_ENDPOINT, uuid))
+                .andExpect(status().isNoContent());
+
+    }
 }
