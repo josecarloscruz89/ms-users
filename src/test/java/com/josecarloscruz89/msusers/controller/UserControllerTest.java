@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
@@ -98,6 +99,70 @@ public class UserControllerTest {
 
         verify(userService, times(1)).createUser(userRequest);
         verifyNoMoreInteractions(userService);
+    }
+
+    @Test
+    @DisplayName("Should not update an user by id due to field name has numbers")
+    public void shouldNotUpdateUserByIdDueToFieldNameHasNumbers() throws Exception {
+        UserRequest userRequest = UserRequest.builder()
+                .name("Jose123")
+                .age(33)
+                .build();
+
+        String uuid = UUID.randomUUID().toString();
+
+        byte[] body = objectMapper.writeValueAsBytes(userRequest);
+
+        mockMvc.perform(put(USER_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].message", is("The field name shouldn't accept numbers")));
+
+        verify(userService, times(0)).updateUser(userRequest, uuid);
+    }
+
+    @Test
+    @DisplayName("Should not update an user by id due to missing fields")
+    public void shouldNotUpdateUserDueToMissingFields() throws Exception {
+        UserRequest userRequest = UserRequest.builder()
+                .build();
+
+        String uuid = UUID.randomUUID().toString();
+
+        byte[] body = objectMapper.writeValueAsBytes(userRequest);
+
+        mockMvc.perform(put(USER_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].message", hasItem("The field name is required")))
+                .andExpect(jsonPath("$[*].message", hasItem("The field age is required")));
+
+        verify(userService, times(0)).updateUser(userRequest, uuid);
+    }
+
+    @Test
+    @DisplayName("Should not update an user by id due to missing name field")
+    public void shouldNotUpdateUserDueToMissingNameField() throws Exception {
+        UserRequest userRequest = UserRequest.builder()
+                .age(33)
+                .build();
+
+        String uuid = UUID.randomUUID().toString();
+
+        byte[] body = objectMapper.writeValueAsBytes(userRequest);
+
+        mockMvc.perform(put(USER_BY_ID_ENDPOINT, uuid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].message", is("The field name is required")));
+
+        verify(userService, times(0)).updateUser(userRequest, uuid);
     }
 
     @Test
